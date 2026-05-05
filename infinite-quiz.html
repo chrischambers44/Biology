@@ -1,0 +1,1504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AQA GCSE Biology — Infinite Quiz Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,wght@0,300;0,600;0,800;1,300;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0a1a0e;
+    --surface: #0f2213;
+    --surface2: #152d1a;
+    --border: #1e4027;
+    --border2: #2a5535;
+    --green: #22c55e;
+    --green-dim: #16a34a;
+    --green-glow: rgba(34,197,94,0.15);
+    --green-faint: rgba(34,197,94,0.07);
+    --text: #e8f5ec;
+    --text-dim: #7aab87;
+    --text-muted: #4a7055;
+    --accent: #86efac;
+    --gold: #fbbf24;
+    --red: #f87171;
+    --blue: #60a5fa;
+    --radius: 12px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    line-height: 1.6;
+    background-image:
+      radial-gradient(ellipse 80% 60% at 50% -20%, rgba(34,197,94,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 40% at 90% 80%, rgba(34,197,94,0.04) 0%, transparent 50%);
+  }
+
+  /* ── NAV ── */
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 32px;
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(12px);
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(10,26,14,0.85);
+  }
+  .nav-logo { font-family: 'Fraunces', serif; font-size: 1.1rem; color: var(--green); letter-spacing: -0.02em; }
+  .nav-links { display: flex; gap: 24px; }
+  .nav-links a { color: var(--text-dim); text-decoration: none; font-size: 0.875rem; font-weight: 500; transition: color 0.2s; }
+  .nav-links a:hover { color: var(--text); }
+  .nav-badge {
+    background: var(--green-faint);
+    border: 1px solid var(--border2);
+    color: var(--green);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+
+  /* ── SECTIONS ── */
+  section { display: none; }
+  section.active { display: block; }
+
+  /* ── PASSWORD GATE ── */
+  #gate {
+    display: flex; align-items: center; justify-content: center;
+    min-height: calc(100vh - 65px);
+    padding: 40px 20px;
+  }
+  .gate-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 56px 48px;
+    max-width: 440px;
+    width: 100%;
+    text-align: center;
+  }
+  .gate-icon { font-size: 3rem; margin-bottom: 20px; display: block; }
+  .gate-card h1 { font-family: 'Fraunces', serif; font-size: 2rem; font-weight: 800; line-height: 1.1; margin-bottom: 8px; }
+  .gate-card h1 em { font-style: italic; color: var(--green); }
+  .gate-card p { color: var(--text-dim); margin-bottom: 32px; font-size: 0.9rem; }
+  .input-wrap { position: relative; margin-bottom: 16px; }
+  .input-wrap input {
+    width: 100%; background: var(--bg); border: 1px solid var(--border2);
+    border-radius: var(--radius); padding: 14px 18px; color: var(--text);
+    font-family: 'DM Mono', monospace; font-size: 1rem; outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    text-align: center; letter-spacing: 0.15em;
+  }
+  .input-wrap input:focus { border-color: var(--green); box-shadow: 0 0 0 3px var(--green-glow); }
+  .error-msg { color: var(--red); font-size: 0.8rem; margin-bottom: 12px; display: none; }
+  .error-msg.show { display: block; }
+
+  /* ── BUTTONS ── */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 13px 28px; border-radius: var(--radius);
+    font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.9rem;
+    cursor: pointer; transition: all 0.2s; border: none; text-decoration: none;
+  }
+  .btn-primary {
+    background: var(--green); color: #0a1a0e;
+    box-shadow: 0 4px 20px rgba(34,197,94,0.3);
+  }
+  .btn-primary:hover { background: var(--accent); box-shadow: 0 6px 28px rgba(34,197,94,0.45); transform: translateY(-1px); }
+  .btn-secondary {
+    background: transparent; color: var(--text-dim);
+    border: 1px solid var(--border2);
+  }
+  .btn-secondary:hover { background: var(--surface2); color: var(--text); }
+  .btn-ghost { background: transparent; color: var(--text-dim); border: none; padding: 8px 16px; font-size: 0.85rem; }
+  .btn-ghost:hover { color: var(--text); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .btn-full { width: 100%; }
+  .btn-gold { background: var(--gold); color: #1a1000; box-shadow: 0 4px 20px rgba(251,191,36,0.3); }
+  .btn-gold:hover { box-shadow: 0 6px 28px rgba(251,191,36,0.45); transform: translateY(-1px); }
+
+  /* ── SETUP SCREEN ── */
+  #setup { padding: 60px 24px; max-width: 800px; margin: 0 auto; }
+  .setup-header { margin-bottom: 48px; }
+  .setup-header h1 { font-family: 'Fraunces', serif; font-size: 2.6rem; font-weight: 800; line-height: 1.1; }
+  .setup-header h1 span { color: var(--green); }
+  .setup-header p { color: var(--text-dim); margin-top: 10px; font-size: 1rem; }
+
+  .setup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 32px; }
+  @media (max-width: 600px) { .setup-grid { grid-template-columns: 1fr; } }
+
+  .setup-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 24px;
+  }
+  .setup-card h3 { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 16px; }
+  .num-selector { display: flex; align-items: center; gap: 12px; }
+  .num-selector button {
+    width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--border2);
+    background: var(--bg); color: var(--text); font-size: 1.1rem; cursor: pointer;
+    transition: all 0.15s; display: flex; align-items: center; justify-content: center;
+  }
+  .num-selector button:hover { background: var(--surface2); border-color: var(--green); color: var(--green); }
+  .num-selector .num-display {
+    font-family: 'Fraunces', serif; font-size: 2.2rem; font-weight: 800;
+    color: var(--green); min-width: 60px; text-align: center;
+  }
+  .quick-nums { display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap; }
+  .quick-nums button {
+    padding: 5px 12px; border-radius: 6px; border: 1px solid var(--border2);
+    background: var(--bg); color: var(--text-dim); font-size: 0.8rem; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .quick-nums button:hover, .quick-nums button.active { background: var(--green-faint); border-color: var(--green); color: var(--green); }
+
+  .topic-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+  .topic-pill {
+    padding: 7px 14px; border-radius: 20px; border: 1px solid var(--border2);
+    background: var(--bg); color: var(--text-dim); font-size: 0.8rem; cursor: pointer;
+    transition: all 0.15s; font-weight: 500;
+  }
+  .topic-pill.selected { background: var(--green-faint); border-color: var(--green); color: var(--green); }
+  .topic-pill:hover { border-color: var(--green); color: var(--text); }
+
+  .mode-options { display: flex; gap: 10px; flex-direction: column; }
+  .mode-option {
+    padding: 12px 16px; border-radius: var(--radius); border: 1px solid var(--border2);
+    background: var(--bg); cursor: pointer; transition: all 0.15s;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .mode-option:hover { border-color: var(--green); background: var(--green-faint); }
+  .mode-option.selected { border-color: var(--green); background: var(--green-faint); }
+  .mode-option input { display: none; }
+  .mode-icon { font-size: 1.4rem; }
+  .mode-label { font-size: 0.875rem; font-weight: 600; }
+  .mode-desc { font-size: 0.75rem; color: var(--text-dim); }
+
+  /* ── TRACKER SIDEBAR INLINE ── */
+  .tracker-bar {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px; margin-bottom: 20px; grid-column: 1/-1;
+  }
+  .tracker-bar h3 { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 12px; }
+  .tracker-topics { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tracker-chip {
+    display: flex; align-items: center; gap: 6px; padding: 5px 10px;
+    border-radius: 8px; background: var(--bg); border: 1px solid var(--border);
+    font-size: 0.75rem;
+  }
+  .tracker-chip .chip-score { font-family: 'DM Mono', monospace; font-weight: 500; }
+  .chip-bar { width: 40px; height: 4px; border-radius: 2px; background: var(--border2); overflow: hidden; }
+  .chip-fill { height: 100%; background: var(--green); border-radius: 2px; transition: width 0.5s ease; }
+
+  /* ── QUIZ SCREEN ── */
+  #quiz-screen { padding: 40px 24px; max-width: 860px; margin: 0 auto; }
+  .quiz-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; flex-wrap: gap; }
+  .quiz-meta { font-family: 'DM Mono', monospace; font-size: 0.8rem; color: var(--text-muted); }
+  .progress-outer { height: 4px; background: var(--border); border-radius: 2px; margin: 16px 0; }
+  .progress-inner { height: 100%; background: var(--green); border-radius: 2px; transition: width 0.4s ease; }
+
+  /* vs Dad scoreboard */
+  .scoreboard {
+    display: none; grid-template-columns: 1fr auto 1fr; align-items: center;
+    gap: 16px; background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px 24px; margin-bottom: 24px;
+  }
+  .scoreboard.active { display: grid; }
+  .score-player { text-align: center; }
+  .score-name { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); }
+  .score-num { font-family: 'Fraunces', serif; font-size: 2rem; font-weight: 800; }
+  .score-you .score-num { color: var(--green); }
+  .score-dad .score-num { color: var(--gold); }
+  .score-vs { font-family: 'Fraunces', serif; font-size: 1rem; font-style: italic; color: var(--text-muted); }
+
+  /* Question cards */
+  .question-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 32px; margin-bottom: 20px;
+    transition: border-color 0.3s;
+  }
+  .question-card.answered { border-color: var(--border2); }
+  .question-card.correct-q { border-color: rgba(34,197,94,0.4); background: linear-gradient(135deg, var(--surface), rgba(34,197,94,0.03)); }
+  .question-card.wrong-q { border-color: rgba(248,113,113,0.3); background: linear-gradient(135deg, var(--surface), rgba(248,113,113,0.03)); }
+
+  .q-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 20px; }
+  .q-num {
+    font-family: 'DM Mono', monospace; font-size: 0.7rem; color: var(--text-muted);
+    background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+    padding: 4px 8px; white-space: nowrap; flex-shrink: 0; margin-top: 3px;
+  }
+  .q-topic-tag {
+    font-size: 0.7rem; padding: 3px 8px; border-radius: 4px;
+    background: var(--green-faint); border: 1px solid rgba(34,197,94,0.2);
+    color: var(--green); white-space: nowrap; flex-shrink: 0; margin-top: 3px;
+  }
+  .q-marks { font-size: 0.7rem; color: var(--text-muted); margin-top: 3px; flex-shrink: 0; }
+  .q-text { font-size: 1rem; font-weight: 500; line-height: 1.6; flex: 1; }
+
+  /* MCQ */
+  .mcq-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 500px) { .mcq-options { grid-template-columns: 1fr; } }
+  .mcq-opt {
+    padding: 12px 16px; border-radius: 10px; border: 1px solid var(--border2);
+    background: var(--bg); cursor: pointer; transition: all 0.15s;
+    display: flex; align-items: center; gap: 10px; font-size: 0.9rem;
+  }
+  .mcq-opt:hover:not(.locked) { border-color: var(--green); background: var(--green-faint); }
+  .mcq-opt.selected { border-color: var(--green); background: var(--green-faint); color: var(--green); }
+  .mcq-opt.correct { border-color: var(--green); background: rgba(34,197,94,0.12); color: var(--accent); }
+  .mcq-opt.wrong { border-color: var(--red); background: rgba(248,113,113,0.08); color: var(--red); }
+  .mcq-opt.locked { cursor: default; }
+  .opt-letter {
+    width: 24px; height: 24px; border-radius: 6px; border: 1px solid var(--border2);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'DM Mono', monospace; font-size: 0.75rem; font-weight: 500; flex-shrink: 0;
+  }
+
+  /* Short/extended answer */
+  .answer-area {
+    width: 100%; background: var(--bg); border: 1px solid var(--border2);
+    border-radius: var(--radius); padding: 14px 16px; color: var(--text);
+    font-family: 'DM Sans', sans-serif; font-size: 0.9rem; outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s; resize: vertical;
+    min-height: 100px; line-height: 1.6;
+  }
+  .answer-area:focus { border-color: var(--green); box-shadow: 0 0 0 3px var(--green-glow); }
+  .answer-area:disabled { opacity: 0.7; cursor: default; }
+
+  /* Feedback box */
+  .feedback-box {
+    margin-top: 16px; padding: 16px 20px; border-radius: 10px;
+    border-left: 3px solid; display: none;
+    font-size: 0.875rem; line-height: 1.6;
+  }
+  .feedback-box.show { display: block; }
+  .feedback-box.correct { background: rgba(34,197,94,0.07); border-color: var(--green); }
+  .feedback-box.partial { background: rgba(251,191,36,0.07); border-color: var(--gold); }
+  .feedback-box.wrong { background: rgba(248,113,113,0.07); border-color: var(--red); }
+  .feedback-box .fb-score { font-family: 'DM Mono', monospace; font-weight: 500; margin-bottom: 6px; }
+  .feedback-box .fb-model { color: var(--text-dim); margin-top: 8px; font-size: 0.825rem; }
+  .feedback-box .fb-model strong { color: var(--text); }
+
+  .mark-btn-wrap { margin-top: 14px; display: flex; gap: 10px; }
+
+  /* Loading spinner */
+  .loading-wrap { display: flex; align-items: center; gap: 12px; margin-top: 14px; color: var(--text-muted); font-size: 0.85rem; }
+  .spinner {
+    width: 18px; height: 18px; border: 2px solid var(--border2);
+    border-top-color: var(--green); border-radius: 50%;
+    animation: spin 0.8s linear infinite; flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* quiz footer */
+  .quiz-footer {
+    display: flex; gap: 12px; flex-wrap: wrap; align-items: center;
+    justify-content: space-between; margin-top: 32px; padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+  .answered-count { font-size: 0.85rem; color: var(--text-dim); font-family: 'DM Mono', monospace; }
+
+  /* Generation loading */
+  .gen-loading {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 80px 24px; gap: 20px; text-align: center;
+  }
+  .gen-loading .big-spinner {
+    width: 56px; height: 56px; border: 3px solid var(--border2);
+    border-top-color: var(--green); border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  .gen-loading h3 { font-family: 'Fraunces', serif; font-size: 1.5rem; font-weight: 600; }
+  .gen-loading p { color: var(--text-dim); font-size: 0.9rem; max-width: 320px; }
+
+  /* ── RESULTS SCREEN ── */
+  #results-screen { padding: 60px 24px; max-width: 860px; margin: 0 auto; }
+  .results-hero { text-align: center; margin-bottom: 48px; }
+  .results-hero .big-score {
+    font-family: 'Fraunces', serif; font-size: 5rem; font-weight: 800; color: var(--green);
+    line-height: 1; margin: 20px 0 8px;
+  }
+  .results-hero p { color: var(--text-dim); font-size: 1rem; }
+  .results-hero h2 { font-family: 'Fraunces', serif; font-size: 2rem; font-weight: 800; }
+
+  /* vs Dad result */
+  .dad-result {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 28px 32px; margin-bottom: 32px;
+    display: none;
+  }
+  .dad-result.show { display: block; }
+  .dad-result h3 { font-family: 'Fraunces', serif; font-size: 1.5rem; margin-bottom: 16px; }
+  .dad-versus { display: grid; grid-template-columns: 1fr auto 1fr; gap: 20px; align-items: center; text-align: center; margin-bottom: 16px; }
+  .dad-winner { font-size: 2rem; }
+  .dad-score-big { font-family: 'Fraunces', serif; font-size: 3rem; font-weight: 800; }
+  .dad-verdict {
+    text-align: center; padding: 12px 20px; border-radius: 10px;
+    background: var(--bg); font-weight: 600; font-size: 0.95rem;
+  }
+
+  /* Topic breakdown */
+  .topic-breakdown { margin-bottom: 32px; }
+  .topic-breakdown h3 { font-family: 'Fraunces', serif; font-size: 1.2rem; margin-bottom: 16px; }
+  .topic-row {
+    display: flex; align-items: center; gap: 12px; padding: 10px 16px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; margin-bottom: 6px;
+  }
+  .topic-name { font-weight: 500; font-size: 0.875rem; min-width: 160px; }
+  .topic-prog { flex: 1; height: 8px; background: var(--border2); border-radius: 4px; overflow: hidden; }
+  .topic-prog-fill { height: 100%; border-radius: 4px; transition: width 0.8s ease; }
+  .topic-pct { font-family: 'DM Mono', monospace; font-size: 0.8rem; color: var(--text-dim); min-width: 40px; text-align: right; }
+
+  /* Action buttons */
+  .results-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 32px; }
+
+  /* ── HISTORY PANEL ── */
+  .history-section { margin-top: 40px; padding-top: 32px; border-top: 1px solid var(--border); }
+  .history-section h3 { font-family: 'Fraunces', serif; font-size: 1.2rem; margin-bottom: 16px; }
+  .history-item {
+    display: flex; gap: 12px; padding: 10px 14px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; margin-bottom: 6px; align-items: center;
+    font-size: 0.825rem;
+  }
+  .hist-date { font-family: 'DM Mono', monospace; font-size: 0.7rem; color: var(--text-muted); white-space: nowrap; }
+  .hist-score { font-family: 'DM Mono', monospace; font-weight: 500; }
+  .hist-topics { color: var(--text-dim); flex: 1; font-size: 0.775rem; }
+  .clear-history { float: right; }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px; z-index: 999;
+    background: var(--surface2); border: 1px solid var(--border2);
+    border-radius: var(--radius); padding: 12px 20px;
+    font-size: 0.875rem; transform: translateY(80px); opacity: 0;
+    transition: all 0.3s ease; pointer-events: none;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  /* ── DAD SCORE INPUT ── */
+  .dad-input-wrap {
+    background: var(--surface); border: 1px solid var(--gold);
+    border-radius: var(--radius); padding: 20px 24px; margin-bottom: 24px;
+    display: none;
+  }
+  .dad-input-wrap.show { display: block; }
+  .dad-input-wrap h4 { color: var(--gold); font-size: 0.875rem; font-weight: 600; margin-bottom: 12px; }
+  .dad-input-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .dad-input-row input {
+    background: var(--bg); border: 1px solid var(--border2); border-radius: 8px;
+    padding: 10px 14px; color: var(--text); font-family: 'DM Mono', monospace;
+    font-size: 1rem; width: 80px; outline: none; text-align: center;
+  }
+  .dad-input-row input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(251,191,36,0.1); }
+  .dad-input-row label { color: var(--text-dim); font-size: 0.875rem; }
+
+  /* Misc */
+  .chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 2px 8px; border-radius: 4px; font-size: 0.7rem;
+    font-family: 'DM Mono', monospace;
+  }
+  .chip-green { background: var(--green-faint); color: var(--green); border: 1px solid rgba(34,197,94,0.2); }
+  .chip-red { background: rgba(248,113,113,0.08); color: var(--red); border: 1px solid rgba(248,113,113,0.2); }
+  .chip-gold { background: rgba(251,191,36,0.08); color: var(--gold); border: 1px solid rgba(251,191,36,0.2); }
+
+  .section-divider { height: 1px; background: var(--border); margin: 32px 0; }
+
+  .skeleton-lines { display: flex; flex-direction: column; gap: 10px; }
+  .skeleton-line {
+    height: 14px; border-radius: 4px; background: var(--surface2);
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity: 0.4; } 50% { opacity: 0.9; } }
+
+  @media (max-width: 600px) {
+    nav { padding: 12px 16px; }
+    #setup, #quiz-screen, #results-screen { padding: 24px 16px; }
+    .gate-card { padding: 36px 24px; }
+    .setup-header h1 { font-size: 2rem; }
+    .results-hero .big-score { font-size: 3.5rem; }
+    .quiz-footer { flex-direction: column; align-items: stretch; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <span class="nav-logo">🧬 Biology Revision</span>
+  <div class="nav-links">
+    <a href="https://chrischambers44.github.io/Biology/index.html">Home</a>
+    <a href="https://chrischambers44.github.io/Biology/quiz.html">Diagnostic</a>
+  </div>
+  <span class="nav-badge" id="streak-badge">🔥 0 streak</span>
+</nav>
+
+<!-- ════════════ PASSWORD GATE ════════════ -->
+<section id="gate" class="active">
+  <div class="gate-card">
+    <span class="gate-icon">🧬</span>
+    <h1>Infinite Quiz <em>Generator</em></h1>
+    <p>AQA GCSE Combined Science: Trilogy — Biology<br>Fresh questions every time, AI-marked instantly.</p>
+    <div class="input-wrap">
+      <input type="password" id="pw-input" placeholder="Enter password" autocomplete="off">
+    </div>
+    <p class="error-msg" id="pw-error">❌ Incorrect password — ask your dad!</p>
+    <button class="btn btn-primary btn-full" onclick="checkPassword()">Unlock →</button>
+  </div>
+</section>
+
+<!-- ════════════ SETUP SCREEN ════════════ -->
+<section id="setup">
+  <div class="setup-header">
+    <h1>Quiz <span>Setup</span></h1>
+    <p>Customise your quiz — Claude generates fresh questions every single time.</p>
+  </div>
+
+  <!-- Topic history tracker -->
+  <div class="tracker-bar">
+    <h3>📊 Your Topic Performance (this browser)</h3>
+    <div class="tracker-topics" id="tracker-chips">
+      <span style="color:var(--text-muted);font-size:0.8rem">No history yet — take a quiz first!</span>
+    </div>
+  </div>
+
+  <div class="setup-grid">
+    <!-- Number of questions -->
+    <div class="setup-card">
+      <h3>Number of Questions</h3>
+      <div class="num-selector">
+        <button onclick="adjustQ(-1)">−</button>
+        <div class="num-display" id="q-count">10</div>
+        <button onclick="adjustQ(1)">+</button>
+      </div>
+      <div class="quick-nums" id="quick-nums">
+        <button onclick="setQ(5)">5</button>
+        <button onclick="setQ(10)" class="active">10</button>
+        <button onclick="setQ(15)">15</button>
+        <button onclick="setQ(20)">20</button>
+        <button onclick="setQ(30)">30</button>
+      </div>
+    </div>
+
+    <!-- Mode -->
+    <div class="setup-card">
+      <h3>Quiz Mode</h3>
+      <div class="mode-options">
+        <label class="mode-option selected" id="mode-solo">
+          <input type="radio" name="mode" value="solo" checked>
+          <span class="mode-icon">🎯</span>
+          <div>
+            <div class="mode-label">Solo Revision</div>
+            <div class="mode-desc">Self-paced, full feedback</div>
+          </div>
+        </label>
+        <label class="mode-option" id="mode-dad">
+          <input type="radio" name="mode" value="dad">
+          <span class="mode-icon">⚔️</span>
+          <div>
+            <div class="mode-label">vs Dad</div>
+            <div class="mode-desc">Same questions, compare scores</div>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <!-- Topics -->
+    <div class="setup-card" style="grid-column:1/-1">
+      <h3>Topics to Include</h3>
+      <div class="topic-pills" id="topic-pills"></div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="btn-ghost" onclick="selectAllTopics()">Select all</button>
+        <button class="btn-ghost" onclick="clearTopics()">Clear</button>
+        <span id="topic-error" style="color:var(--red);font-size:0.8rem;display:none">Pick at least 1 topic</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dad score input (shows when vs Dad selected) -->
+  <div class="dad-input-wrap" id="dad-input-section">
+    <h4>⚔️ Dad's Score Entry</h4>
+    <p style="font-size:0.8rem;color:var(--text-dim);margin-bottom:12px">After the quiz, you'll be prompted to enter Dad's score for comparison. Or Dad can take the quiz on a separate device using the same settings!</p>
+  </div>
+
+  <button class="btn btn-primary" style="padding:16px 40px;font-size:1rem" onclick="startQuiz()">
+    Generate Quiz →
+  </button>
+</section>
+
+<!-- ════════════ QUIZ SCREEN ════════════ -->
+<section id="quiz-screen">
+  <div id="quiz-loading" class="gen-loading">
+    <div class="big-spinner"></div>
+    <h3>Generating your quiz…</h3>
+    <p id="loading-topic">Claude is crafting fresh questions from the AQA specification</p>
+  </div>
+
+  <div id="quiz-content" style="display:none">
+    <div class="quiz-header">
+      <div>
+        <div style="font-family:'Fraunces',serif;font-size:1.4rem;font-weight:700">AQA Biology Quiz</div>
+        <div class="quiz-meta" id="quiz-meta"></div>
+      </div>
+      <button class="btn btn-secondary" onclick="goSetup()" style="font-size:0.8rem;padding:8px 16px">← New Quiz</button>
+    </div>
+
+    <div class="progress-outer"><div class="progress-inner" id="quiz-progress" style="width:0%"></div></div>
+
+    <!-- vs Dad scoreboard -->
+    <div class="scoreboard" id="scoreboard">
+      <div class="score-player score-you">
+        <div class="score-name">You</div>
+        <div class="score-num" id="score-you">0</div>
+      </div>
+      <div class="score-vs">vs</div>
+      <div class="score-player score-dad">
+        <div class="score-name">Dad</div>
+        <div class="score-num" id="score-dad">—</div>
+      </div>
+    </div>
+
+    <div id="questions-container"></div>
+
+    <div class="quiz-footer">
+      <div class="answered-count" id="answered-count">0 / 0 answered</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-primary" id="finish-btn" onclick="finishQuiz()" disabled>
+          Finish &amp; Get Results 🧬
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════ RESULTS SCREEN ════════════ -->
+<section id="results-screen">
+  <div class="results-hero">
+    <h2>Results are in! 🎉</h2>
+    <div class="big-score" id="final-score">—</div>
+    <p id="final-subtitle">Loading results…</p>
+  </div>
+
+  <!-- vs Dad result card -->
+  <div class="dad-result" id="dad-result-card">
+    <h3>⚔️ vs Dad</h3>
+    <div class="dad-versus">
+      <div>
+        <div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:4px">You</div>
+        <div class="dad-score-big" style="color:var(--green)" id="dad-result-you">0</div>
+      </div>
+      <div style="font-family:'Fraunces',serif;font-style:italic;font-size:1.5rem;color:var(--text-muted)">vs</div>
+      <div>
+        <div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:4px">Dad</div>
+        <div class="dad-score-big" style="color:var(--gold)" id="dad-result-dad">0</div>
+      </div>
+    </div>
+    <div class="dad-verdict" id="dad-verdict"></div>
+  </div>
+
+  <!-- Dad score entry -->
+  <div class="dad-input-wrap show" id="dad-score-entry" style="display:none">
+    <h4>⚔️ Enter Dad's Score</h4>
+    <div class="dad-input-row">
+      <label>Dad got</label>
+      <input type="number" id="dad-score-input" min="0" placeholder="0">
+      <label>marks out of <span id="dad-total-marks">—</span></label>
+      <button class="btn btn-gold" onclick="submitDadScore()">Compare →</button>
+    </div>
+  </div>
+
+  <!-- Topic breakdown -->
+  <div class="topic-breakdown">
+    <h3>Topic Breakdown</h3>
+    <div id="topic-breakdown-rows"></div>
+  </div>
+
+  <!-- All Q&A review -->
+  <div id="qa-review"></div>
+
+  <div class="results-actions">
+    <button class="btn btn-primary" onclick="goSetup()">Take Another Quiz 🔄</button>
+    <button class="btn btn-secondary" onclick="downloadPDF()">Download PDF 📄</button>
+    <button class="btn btn-secondary" onclick="goSetup()">← Back to Setup</button>
+  </div>
+
+  <!-- History -->
+  <div class="history-section">
+    <h3>Quiz History <button class="btn-ghost clear-history" onclick="clearHistory()" style="font-size:0.75rem">Clear history</button></h3>
+    <div id="history-list"></div>
+  </div>
+</section>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════════
+const PASSWORD = 'PerseyDog';
+const MODEL = 'claude-sonnet-4-6';
+const API_URL = 'https://api.anthropic.com/v1/messages';
+const API_KEY = 'sk-ant-api03-JI76B7kLYRTKe7t4Yl1cS9S_Qg_7MWJm8qAlZqIuyBPuQT3JrQ1jmKJyb9IXSBSa_8-rqfN-Z5gSnKe2emMcA-LfQnCwAA';
+
+const TOPICS = [
+  { id: 'B1', name: 'B1 Cell Biology', short: 'B1' },
+  { id: 'B2', name: 'B2 Organisation', short: 'B2' },
+  { id: 'B3', name: 'B3 Infection & Response', short: 'B3' },
+  { id: 'B4', name: 'B4 Bioenergetics', short: 'B4' },
+  { id: 'B5', name: 'B5 Homeostasis & Response', short: 'B5' },
+  { id: 'B6', name: 'B6 Inheritance & Evolution', short: 'B6' },
+  { id: 'B7', name: 'B7 Ecology', short: 'B7' },
+];
+
+// ══════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════
+let state = {
+  numQuestions: 10,
+  selectedTopics: TOPICS.map(t => t.id),
+  mode: 'solo',
+  questions: [],
+  answers: {},
+  scores: {},
+  feedback: {},
+  marked: {},
+  totalMarks: 0,
+  earnedMarks: 0,
+  quizComplete: false,
+};
+
+// ══════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════
+function showSection(id) {
+  document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function goSetup() { showSection('setup'); renderTracker(); renderHistory(); }
+
+// ══════════════════════════════════════════
+// PASSWORD
+// ══════════════════════════════════════════
+function checkPassword() {
+  const val = document.getElementById('pw-input').value;
+  if (val === PASSWORD) {
+    showSection('setup');
+    renderTopicPills();
+    renderTracker();
+    renderHistory();
+  } else {
+    document.getElementById('pw-error').classList.add('show');
+    document.getElementById('pw-input').classList.add('wrong');
+  }
+}
+document.getElementById('pw-input').addEventListener('keydown', e => { if(e.key==='Enter') checkPassword(); });
+
+// ══════════════════════════════════════════
+// SETUP
+// ══════════════════════════════════════════
+function adjustQ(delta) {
+  state.numQuestions = Math.max(1, Math.min(40, state.numQuestions + delta));
+  document.getElementById('q-count').textContent = state.numQuestions;
+  updateQuickNums();
+}
+function setQ(n) {
+  state.numQuestions = n;
+  document.getElementById('q-count').textContent = n;
+  updateQuickNums();
+}
+function updateQuickNums() {
+  document.querySelectorAll('#quick-nums button').forEach(btn => {
+    btn.classList.toggle('active', parseInt(btn.textContent) === state.numQuestions);
+  });
+}
+
+function renderTopicPills() {
+  const container = document.getElementById('topic-pills');
+  container.innerHTML = '';
+  TOPICS.forEach(t => {
+    const pill = document.createElement('button');
+    pill.className = 'topic-pill' + (state.selectedTopics.includes(t.id) ? ' selected' : '');
+    pill.textContent = t.name;
+    pill.onclick = () => toggleTopic(t.id, pill);
+    container.appendChild(pill);
+  });
+}
+
+function toggleTopic(id, el) {
+  if (state.selectedTopics.includes(id)) {
+    if (state.selectedTopics.length === 1) return; // keep at least 1
+    state.selectedTopics = state.selectedTopics.filter(t => t !== id);
+    el.classList.remove('selected');
+  } else {
+    state.selectedTopics.push(id);
+    el.classList.add('selected');
+  }
+}
+
+function selectAllTopics() {
+  state.selectedTopics = TOPICS.map(t => t.id);
+  renderTopicPills();
+}
+function clearTopics() {
+  state.selectedTopics = [TOPICS[0].id];
+  renderTopicPills();
+}
+
+// Mode selection
+document.querySelectorAll('input[name="mode"]').forEach(radio => {
+  radio.addEventListener('change', () => {
+    state.mode = radio.value;
+    document.querySelectorAll('.mode-option').forEach(el => el.classList.remove('selected'));
+    radio.closest('.mode-option').classList.add('selected');
+    document.getElementById('dad-input-section').style.display = state.mode === 'dad' ? 'block' : 'none';
+  });
+});
+
+// ══════════════════════════════════════════
+// QUIZ GENERATION
+// ══════════════════════════════════════════
+async function startQuiz() {
+  if (state.selectedTopics.length === 0) {
+    document.getElementById('topic-error').style.display = 'inline';
+    return;
+  }
+  document.getElementById('topic-error').style.display = 'none';
+
+  // Reset state
+  state.questions = [];
+  state.answers = {};
+  state.scores = {};
+  state.feedback = {};
+  state.marked = {};
+  state.totalMarks = 0;
+  state.earnedMarks = 0;
+  state.quizComplete = false;
+
+  showSection('quiz-screen');
+  document.getElementById('quiz-loading').style.display = 'flex';
+  document.getElementById('quiz-content').style.display = 'none';
+
+  const topicNames = state.selectedTopics.map(id => TOPICS.find(t => t.id === id).name).join(', ');
+  document.getElementById('loading-topic').textContent = `Generating ${state.numQuestions} questions from: ${topicNames}`;
+
+  const prompt = buildGenerationPrompt();
+
+  try {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': API_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: MODEL,
+        max_tokens: 4000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    const data = await response.json();
+    const raw = data.content[0].text;
+
+    // Parse JSON
+    const jsonMatch = raw.match(/\[[\s\S]*\]/);
+    if (!jsonMatch) throw new Error('No JSON array found in response');
+    state.questions = JSON.parse(jsonMatch[0]);
+
+    renderQuiz();
+  } catch (err) {
+    console.error(err);
+    document.getElementById('quiz-loading').innerHTML = `
+      <div style="text-align:center;padding:40px">
+        <div style="font-size:2rem;margin-bottom:16px">⚠️</div>
+        <h3 style="margin-bottom:8px">Failed to generate quiz</h3>
+        <p style="color:var(--text-dim);margin-bottom:20px">${err.message}</p>
+        <button class="btn btn-primary" onclick="goSetup()">← Back to Setup</button>
+      </div>
+    `;
+  }
+}
+
+function buildGenerationPrompt() {
+  const topicList = state.selectedTopics.map(id => TOPICS.find(t => t.id === id).name).join(', ');
+  const n = state.numQuestions;
+
+  return `You are an expert AQA GCSE Combined Science Trilogy Biology examiner. Generate exactly ${n} exam questions.
+
+Topics to cover: ${topicList}
+Distribute questions roughly equally across the selected topics.
+
+Question types to mix:
+- multiple_choice (1 mark) — 4 options A/B/C/D
+- short_answer (2-4 marks)  
+- extended (5-6 marks)
+
+Roughly: 40% multiple choice, 40% short answer, 20% extended.
+
+Return ONLY a JSON array, no other text, no markdown fences. Each item:
+{
+  "id": 1,
+  "topic": "B1",
+  "topicName": "Cell Biology",
+  "type": "multiple_choice" | "short_answer" | "extended",
+  "marks": number,
+  "question": "full question text",
+  "options": ["A. ...", "B. ...", "C. ...", "D. ..."],  // only for multiple_choice
+  "correctOption": "A" | "B" | "C" | "D",  // only for multiple_choice
+  "modelAnswer": "detailed model answer",
+  "markingPoints": ["point 1", "point 2", ...]  // for short/extended
+}
+
+Make questions varied, specific to AQA spec content, and exam-style. Use real biological terminology. Avoid repeating the same concepts.`;
+}
+
+// ══════════════════════════════════════════
+// RENDER QUIZ
+// ══════════════════════════════════════════
+function renderQuiz() {
+  document.getElementById('quiz-loading').style.display = 'none';
+  document.getElementById('quiz-content').style.display = 'block';
+
+  state.totalMarks = state.questions.reduce((s, q) => s + (q.marks || 1), 0);
+  document.getElementById('quiz-meta').textContent = `${state.questions.length} questions · ${state.totalMarks} marks · ${state.selectedTopics.map(id => TOPICS.find(t=>t.id===id).short).join(', ')}`;
+
+  // Scoreboard
+  if (state.mode === 'dad') {
+    document.getElementById('scoreboard').classList.add('active');
+  }
+
+  const container = document.getElementById('questions-container');
+  container.innerHTML = '';
+
+  state.questions.forEach((q, i) => {
+    container.appendChild(buildQuestionCard(q, i));
+  });
+
+  updateProgress();
+  document.getElementById('finish-btn').disabled = false;
+}
+
+function buildQuestionCard(q, i) {
+  const card = document.createElement('div');
+  card.className = 'question-card';
+  card.id = `card-${i}`;
+
+  const typeLabel = q.type === 'multiple_choice' ? 'MCQ' : q.type === 'extended' ? 'Extended' : 'Short Answer';
+
+  card.innerHTML = `
+    <div class="q-header">
+      <div class="q-num">Q${i+1}</div>
+      <div class="q-topic-tag">${q.topicName || q.topic}</div>
+      <div class="q-marks">[${q.marks} mark${q.marks>1?'s':''}]</div>
+      <div class="q-text">${q.question}</div>
+    </div>
+    <div id="input-area-${i}"></div>
+    <div id="feedback-${i}" class="feedback-box"></div>
+  `;
+
+  // Build input
+  const inputArea = card.querySelector(`#input-area-${i}`);
+
+  if (q.type === 'multiple_choice') {
+    const grid = document.createElement('div');
+    grid.className = 'mcq-options';
+    (q.options || []).forEach((opt, oi) => {
+      const letter = ['A','B','C','D'][oi];
+      const btn = document.createElement('div');
+      btn.className = 'mcq-opt';
+      btn.dataset.letter = letter;
+      btn.innerHTML = `<span class="opt-letter">${letter}</span><span>${opt.replace(/^[ABCD]\.\s*/,'')}</span>`;
+      btn.onclick = () => selectMCQ(i, letter, btn, q);
+      grid.appendChild(btn);
+    });
+    inputArea.appendChild(grid);
+  } else {
+    const textarea = document.createElement('textarea');
+    textarea.className = 'answer-area';
+    textarea.id = `answer-${i}`;
+    textarea.rows = q.type === 'extended' ? 6 : 4;
+    textarea.placeholder = q.type === 'extended'
+      ? `Write your full answer here. Aim for ${q.marks} distinct points...`
+      : `Your answer...`;
+    textarea.oninput = () => {
+      state.answers[i] = textarea.value;
+      updateProgress();
+    };
+    inputArea.appendChild(textarea);
+
+    const btnWrap = document.createElement('div');
+    btnWrap.className = 'mark-btn-wrap';
+    btnWrap.id = `mark-wrap-${i}`;
+    const markBtn = document.createElement('button');
+    markBtn.className = 'btn btn-secondary';
+    markBtn.textContent = 'Mark this answer ✓';
+    markBtn.style.fontSize = '0.8rem';
+    markBtn.style.padding = '8px 16px';
+    markBtn.onclick = () => markSingleAnswer(i, q, markBtn);
+    btnWrap.appendChild(markBtn);
+    inputArea.appendChild(btnWrap);
+  }
+
+  return card;
+}
+
+function selectMCQ(i, letter, btnEl, q) {
+  if (state.marked[i]) return;
+
+  // Deselect others
+  const card = document.getElementById(`card-${i}`);
+  card.querySelectorAll('.mcq-opt').forEach(b => b.classList.remove('selected'));
+  btnEl.classList.add('selected');
+  state.answers[i] = letter;
+
+  // Immediate mark for MCQ
+  const correct = letter === q.correctOption;
+  state.marked[i] = true;
+  state.scores[i] = correct ? q.marks : 0;
+  state.feedback[i] = {
+    correct,
+    score: correct ? q.marks : 0,
+    total: q.marks,
+    text: correct ? 'Correct! ✓' : `Incorrect. The correct answer was ${q.correctOption}.`,
+    model: q.modelAnswer || ''
+  };
+
+  // Show colours
+  card.querySelectorAll('.mcq-opt').forEach(b => {
+    b.classList.add('locked');
+    if (b.dataset.letter === q.correctOption) b.classList.add('correct');
+    else if (b.dataset.letter === letter && !correct) b.classList.add('wrong');
+  });
+
+  showFeedback(i, state.feedback[i]);
+  card.classList.add(correct ? 'correct-q' : 'wrong-q');
+  updateProgress();
+  updateVsDadScore();
+}
+
+async function markSingleAnswer(i, q, btn) {
+  const answer = (state.answers[i] || '').trim();
+  if (!answer) { showToast('Write something first!'); return; }
+  if (state.marked[i]) return;
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Marking…';
+
+  // Show loading
+  const feedback = document.getElementById(`feedback-${i}`);
+  feedback.className = 'feedback-box show';
+  feedback.innerHTML = `<div class="loading-wrap"><div class="spinner"></div><span>Claude is marking your answer…</span></div>`;
+
+  try {
+    const prompt = `You are an AQA GCSE Biology examiner. Mark this student answer.
+
+Question: ${q.question}
+Marks available: ${q.marks}
+Mark scheme points: ${JSON.stringify(q.markingPoints || [])}
+Model answer: ${q.modelAnswer || ''}
+
+Student answer: "${answer}"
+
+Reply ONLY with JSON:
+{
+  "score": number (0 to ${q.marks}),
+  "correct": boolean (true if full marks),
+  "feedback": "brief 1-2 sentence examiner feedback",
+  "modelAnswer": "the ideal answer for this question"
+}`;
+
+    const resp = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': API_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: MODEL,
+        max_tokens: 500,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    const data = await resp.json();
+    const raw = data.content[0].text;
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    const result = JSON.parse(jsonMatch[0]);
+
+    state.marked[i] = true;
+    state.scores[i] = result.score;
+    state.feedback[i] = {
+      correct: result.correct,
+      score: result.score,
+      total: q.marks,
+      text: result.feedback,
+      model: result.modelAnswer || q.modelAnswer
+    };
+
+    const card = document.getElementById(`card-${i}`);
+    card.classList.add(result.correct ? 'correct-q' : result.score > 0 ? 'answered' : 'wrong-q');
+    document.getElementById(`answer-${i}`).disabled = true;
+    btn.parentElement.remove();
+
+    showFeedback(i, state.feedback[i]);
+    updateProgress();
+    updateVsDadScore();
+
+  } catch(err) {
+    feedback.innerHTML = `<span style="color:var(--red)">Failed to mark — check connection and try again.</span>`;
+    btn.disabled = false;
+    btn.textContent = 'Mark this answer ✓';
+  }
+}
+
+function showFeedback(i, fb) {
+  const el = document.getElementById(`feedback-${i}`);
+  const cls = fb.correct ? 'correct' : fb.score > 0 ? 'partial' : 'wrong';
+  const emoji = fb.correct ? '✅' : fb.score > 0 ? '⚡' : '❌';
+  el.className = `feedback-box show ${cls}`;
+  el.innerHTML = `
+    <div class="fb-score">${emoji} ${fb.score} / ${fb.total} marks</div>
+    <div>${fb.text}</div>
+    ${fb.model ? `<div class="fb-model"><strong>Model answer:</strong> ${fb.model}</div>` : ''}
+  `;
+}
+
+// ══════════════════════════════════════════
+// PROGRESS
+// ══════════════════════════════════════════
+function updateProgress() {
+  const total = state.questions.length;
+  const answered = Object.keys(state.answers).filter(i => {
+    const a = state.answers[i];
+    return typeof a === 'string' ? a.trim().length > 0 : a != null;
+  }).length;
+
+  const pct = total > 0 ? (answered / total) * 100 : 0;
+  document.getElementById('quiz-progress').style.width = pct + '%';
+  document.getElementById('answered-count').textContent = `${answered} / ${total} answered`;
+}
+
+function updateVsDadScore() {
+  if (state.mode !== 'dad') return;
+  const you = Object.values(state.scores).reduce((s,v) => s+v, 0);
+  document.getElementById('score-you').textContent = you;
+}
+
+// ══════════════════════════════════════════
+// FINISH QUIZ
+// ══════════════════════════════════════════
+async function finishQuiz() {
+  // Mark all unmarked short/extended with submitted text
+  const unmarked = state.questions.filter((q, i) =>
+    q.type !== 'multiple_choice' && !state.marked[i] && (state.answers[i] || '').trim()
+  );
+
+  if (unmarked.length > 0) {
+    showToast(`Marking ${unmarked.length} remaining answers…`);
+    // Mark them all
+    for (let i = 0; i < state.questions.length; i++) {
+      const q = state.questions[i];
+      if (q.type !== 'multiple_choice' && !state.marked[i] && (state.answers[i]||'').trim()) {
+        const btn = document.querySelector(`#mark-wrap-${i} button`);
+        if (btn) await markSingleAnswer(i, q, btn);
+      }
+    }
+  }
+
+  state.quizComplete = true;
+
+  // Calculate totals
+  state.earnedMarks = Object.values(state.scores).reduce((s,v) => s+v, 0);
+
+  // Save to localStorage
+  saveQuizHistory();
+  updateTopicTracker();
+
+  // Build results
+  showResults();
+}
+
+// ══════════════════════════════════════════
+// RESULTS
+// ══════════════════════════════════════════
+function showResults() {
+  showSection('results-screen');
+
+  const pct = state.totalMarks > 0 ? Math.round((state.earnedMarks / state.totalMarks) * 100) : 0;
+  document.getElementById('final-score').textContent = `${state.earnedMarks} / ${state.totalMarks}`;
+  document.getElementById('final-subtitle').textContent = `${pct}% — ${getGrade(pct)}`;
+
+  // Dad mode
+  if (state.mode === 'dad') {
+    document.getElementById('dad-score-entry').style.display = 'block';
+    document.getElementById('dad-total-marks').textContent = state.totalMarks;
+  }
+
+  // Topic breakdown
+  const topicData = {};
+  state.questions.forEach((q, i) => {
+    if (!topicData[q.topic]) topicData[q.topic] = { earned: 0, total: 0, name: q.topicName || q.topic };
+    topicData[q.topic].total += q.marks;
+    topicData[q.topic].earned += (state.scores[i] || 0);
+  });
+
+  const breakdown = document.getElementById('topic-breakdown-rows');
+  breakdown.innerHTML = '';
+  Object.entries(topicData).forEach(([topic, data]) => {
+    const pct = data.total > 0 ? Math.round((data.earned / data.total) * 100) : 0;
+    const color = pct >= 70 ? '#22c55e' : pct >= 40 ? '#fbbf24' : '#f87171';
+    breakdown.innerHTML += `
+      <div class="topic-row">
+        <div class="topic-name">${data.name}</div>
+        <div class="topic-prog"><div class="topic-prog-fill" style="width:${pct}%;background:${color}"></div></div>
+        <div class="topic-pct">${data.earned}/${data.total} (${pct}%)</div>
+      </div>
+    `;
+  });
+
+  // Q&A Review
+  const review = document.getElementById('qa-review');
+  review.innerHTML = '<div class="section-divider"></div><h3 style="font-family:Fraunces,serif;font-size:1.2rem;margin-bottom:16px">Full Q&A Review</h3>';
+  state.questions.forEach((q, i) => {
+    const fb = state.feedback[i];
+    const cls = fb ? (fb.correct ? 'chip-green' : fb.score > 0 ? 'chip-gold' : 'chip-red') : '';
+    review.innerHTML += `
+      <div class="question-card" style="margin-bottom:12px">
+        <div class="q-header">
+          <div class="q-num">Q${i+1}</div>
+          <div class="q-topic-tag">${q.topicName || q.topic}</div>
+          ${fb ? `<span class="chip ${cls}">${fb.score}/${fb.total}</span>` : ''}
+          <div class="q-text" style="font-size:0.9rem">${q.question}</div>
+        </div>
+        ${state.answers[i] ? `<div style="background:var(--bg);border-radius:8px;padding:12px 14px;font-size:0.85rem;margin-top:8px;color:var(--text-dim)"><strong style="color:var(--text-muted);font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em">Your answer</strong><br>${state.answers[i]}</div>` : ''}
+        ${fb ? `<div class="feedback-box show ${fb.correct?'correct':fb.score>0?'partial':'wrong'}" style="margin-top:10px">
+          <div class="fb-score">${fb.correct?'✅':fb.score>0?'⚡':'❌'} ${fb.score}/${fb.total} marks</div>
+          <div>${fb.text}</div>
+          ${fb.model ? `<div class="fb-model"><strong>Model answer:</strong> ${fb.model}</div>` : ''}
+        </div>` : ''}
+      </div>
+    `;
+  });
+
+  renderHistory();
+}
+
+function getGrade(pct) {
+  if (pct >= 90) return '🌟 Outstanding';
+  if (pct >= 75) return '🎉 Excellent';
+  if (pct >= 60) return '👍 Good';
+  if (pct >= 45) return '📚 Keep Revising';
+  return '⚠️ Needs Work';
+}
+
+function submitDadScore() {
+  const dadScore = parseInt(document.getElementById('dad-score-input').value) || 0;
+  const youScore = state.earnedMarks;
+
+  document.getElementById('dad-result-card').classList.add('show');
+  document.getElementById('dad-result-you').textContent = youScore;
+  document.getElementById('dad-result-dad').textContent = dadScore;
+
+  const verdict = document.getElementById('dad-verdict');
+  if (youScore > dadScore) {
+    verdict.style.color = 'var(--green)';
+    verdict.textContent = `🎉 You win! ${youScore - dadScore} marks ahead of Dad!`;
+  } else if (dadScore > youScore) {
+    verdict.style.color = 'var(--gold)';
+    verdict.textContent = `🏆 Dad wins this round — ${dadScore - youScore} marks ahead. Challenge him again!`;
+  } else {
+    verdict.style.color = 'var(--text)';
+    verdict.textContent = `🤝 It's a draw! Both scored ${youScore}/${state.totalMarks}`;
+  }
+
+  document.getElementById('dad-score-entry').style.display = 'none';
+  document.getElementById('score-dad').textContent = dadScore;
+}
+
+// ══════════════════════════════════════════
+// LOCALSTORAGE — Topic Tracker
+// ══════════════════════════════════════════
+const TRACKER_KEY = 'bio_topic_tracker';
+const HISTORY_KEY = 'bio_quiz_history';
+
+function updateTopicTracker() {
+  const tracker = JSON.parse(localStorage.getItem(TRACKER_KEY) || '{}');
+  const topicData = {};
+
+  state.questions.forEach((q, i) => {
+    if (!topicData[q.topic]) topicData[q.topic] = { earned: 0, total: 0, name: q.topicName || q.topic };
+    topicData[q.topic].total += q.marks;
+    topicData[q.topic].earned += (state.scores[i] || 0);
+  });
+
+  Object.entries(topicData).forEach(([topic, data]) => {
+    if (!tracker[topic]) tracker[topic] = { earned: 0, total: 0, name: data.name, attempts: 0 };
+    tracker[topic].earned += data.earned;
+    tracker[topic].total += data.total;
+    tracker[topic].attempts++;
+    tracker[topic].name = data.name;
+  });
+
+  localStorage.setItem(TRACKER_KEY, JSON.stringify(tracker));
+}
+
+function renderTracker() {
+  const tracker = JSON.parse(localStorage.getItem(TRACKER_KEY) || '{}');
+  const container = document.getElementById('tracker-chips');
+
+  if (Object.keys(tracker).length === 0) {
+    container.innerHTML = '<span style="color:var(--text-muted);font-size:0.8rem">No history yet — take a quiz first!</span>';
+    return;
+  }
+
+  container.innerHTML = '';
+  TOPICS.forEach(t => {
+    const data = tracker[t.id];
+    if (!data) return;
+    const pct = data.total > 0 ? Math.round((data.earned / data.total) * 100) : 0;
+    const color = pct >= 70 ? '#22c55e' : pct >= 40 ? '#fbbf24' : '#f87171';
+    container.innerHTML += `
+      <div class="tracker-chip" title="${data.attempts} attempt(s)">
+        <span style="font-size:0.75rem;font-weight:600">${t.short}</span>
+        <div class="chip-bar"><div class="chip-fill" style="width:${pct}%;background:${color}"></div></div>
+        <span class="chip-score" style="color:${color}">${pct}%</span>
+      </div>
+    `;
+  });
+}
+
+function saveQuizHistory() {
+  const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+  const entry = {
+    date: new Date().toLocaleDateString('en-GB', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }),
+    score: state.earnedMarks,
+    total: state.totalMarks,
+    topics: state.selectedTopics.join(','),
+    mode: state.mode,
+    n: state.questions.length
+  };
+  history.unshift(entry);
+  if (history.length > 20) history.pop();
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+
+  // Update streak
+  updateStreak();
+}
+
+function updateStreak() {
+  const streakKey = 'bio_streak';
+  const todayKey = new Date().toDateString();
+  let streak = JSON.parse(localStorage.getItem(streakKey) || '{"count":0,"lastDay":""}');
+  const yesterday = new Date(); yesterday.setDate(yesterday.getDate()-1);
+
+  if (streak.lastDay === todayKey) {
+    // Already done today
+  } else if (streak.lastDay === yesterday.toDateString()) {
+    streak.count++;
+    streak.lastDay = todayKey;
+  } else if (streak.lastDay !== todayKey) {
+    streak.count = 1;
+    streak.lastDay = todayKey;
+  }
+  localStorage.setItem(streakKey, JSON.stringify(streak));
+  document.getElementById('streak-badge').textContent = `🔥 ${streak.count} streak`;
+}
+
+function renderHistory() {
+  const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+  const container = document.getElementById('history-list');
+
+  if (history.length === 0) {
+    container.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem">No quizzes yet!</p>';
+    return;
+  }
+
+  container.innerHTML = history.slice(0, 10).map(h => {
+    const pct = h.total > 0 ? Math.round((h.score/h.total)*100) : 0;
+    const color = pct >= 70 ? 'chip-green' : pct >= 40 ? 'chip-gold' : 'chip-red';
+    return `<div class="history-item">
+      <span class="hist-date">${h.date}</span>
+      <span class="chip ${color}">${h.score}/${h.total} (${pct}%)</span>
+      <span class="hist-topics">${h.topics.split(',').join(', ')} · ${h.n}q ${h.mode==='dad'?'⚔️':''}</span>
+    </div>`;
+  }).join('');
+}
+
+function clearHistory() {
+  if (!confirm('Clear all quiz history and topic data?')) return;
+  localStorage.removeItem(TRACKER_KEY);
+  localStorage.removeItem(HISTORY_KEY);
+  renderHistory();
+  renderTracker();
+  showToast('History cleared');
+}
+
+// ══════════════════════════════════════════
+// PDF DOWNLOAD
+// ══════════════════════════════════════════
+function downloadPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+
+  const pct = state.totalMarks > 0 ? Math.round((state.earnedMarks/state.totalMarks)*100) : 0;
+  const date = new Date().toLocaleDateString('en-GB', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
+  let y = 20;
+  const lm = 20, rm = 190, pw = 170;
+
+  // Header
+  doc.setFillColor(15, 34, 19);
+  doc.rect(0, 0, 210, 40, 'F');
+  doc.setTextColor(34, 197, 94);
+  doc.setFontSize(18);
+  doc.setFont('helvetica', 'bold');
+  doc.text('AQA GCSE Biology — Quiz Results', lm, 16);
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(122, 171, 135);
+  doc.text(date, lm, 24);
+  doc.text(`Topics: ${state.selectedTopics.join(', ')} · Mode: ${state.mode}`, lm, 30);
+
+  y = 52;
+  doc.setTextColor(0,0,0);
+
+  // Score summary
+  doc.setFillColor(240, 255, 244);
+  doc.roundedRect(lm, y-6, pw, 22, 3, 3, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(24);
+  doc.setTextColor(15, 130, 60);
+  doc.text(`${state.earnedMarks} / ${state.totalMarks}`, lm+8, y+10);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(11);
+  doc.setTextColor(60,60,60);
+  doc.text(`${pct}% — ${getGrade(pct).replace(/[🌟🎉👍📚⚠️]/g,'').trim()}`, lm+55, y+10);
+  y += 30;
+
+  // Topic breakdown
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.setTextColor(34, 197, 94);
+  doc.text('Topic Breakdown', lm, y);
+  y += 6;
+
+  const topicData = {};
+  state.questions.forEach((q, i) => {
+    if (!topicData[q.topic]) topicData[q.topic] = { earned: 0, total: 0, name: q.topicName || q.topic };
+    topicData[q.topic].total += q.marks;
+    topicData[q.topic].earned += (state.scores[i] || 0);
+  });
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  Object.entries(topicData).forEach(([topic, data]) => {
+    const tpct = data.total > 0 ? Math.round((data.earned/data.total)*100) : 0;
+    doc.setTextColor(60,60,60);
+    doc.text(`${data.name}:  ${data.earned}/${data.total} marks (${tpct}%)`, lm, y+4);
+    doc.setFillColor(200,200,200);
+    doc.rect(lm+80, y, 60, 4, 'F');
+    const fillColor = tpct >= 70 ? [34,197,94] : tpct >= 40 ? [251,191,36] : [248,113,113];
+    doc.setFillColor(...fillColor);
+    doc.rect(lm+80, y, Math.max(1,(60*tpct/100)), 4, 'F');
+    y += 9;
+    if (y > 270) { doc.addPage(); y = 20; }
+  });
+
+  y += 6;
+  // Q&A
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.setTextColor(34, 197, 94);
+  doc.text('Question Review', lm, y);
+  y += 8;
+
+  state.questions.forEach((q, i) => {
+    if (y > 260) { doc.addPage(); y = 20; }
+    const fb = state.feedback[i];
+    const scoreStr = fb ? `${fb.score}/${fb.total}` : '-';
+
+    doc.setFillColor(245, 255, 248);
+    doc.roundedRect(lm, y-2, pw, 8, 2, 2, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(0,0,0);
+    const qLines = doc.splitTextToSize(`Q${i+1} [${scoreStr}] — ${q.topicName||q.topic}: ${q.question}`, pw-10);
+    doc.text(qLines, lm+3, y+4);
+    y += qLines.length * 4 + 5;
+
+    if (state.answers[i]) {
+      if (y > 260) { doc.addPage(); y = 20; }
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(80,80,80);
+      doc.setFontSize(8);
+      const aLines = doc.splitTextToSize(`Your answer: ${state.answers[i]}`, pw-6);
+      doc.text(aLines, lm+3, y);
+      y += aLines.length * 3.5 + 2;
+    }
+
+    if (fb && fb.model) {
+      if (y > 260) { doc.addPage(); y = 20; }
+      doc.setTextColor(34, 130, 60);
+      doc.setFontSize(8);
+      const mLines = doc.splitTextToSize(`Model: ${fb.model}`, pw-6);
+      doc.text(mLines, lm+3, y);
+      y += mLines.length * 3.5 + 4;
+    }
+
+    if (y > 260) { doc.addPage(); y = 20; }
+    doc.setDrawColor(220,240,225);
+    doc.line(lm, y, rm, y);
+    y += 4;
+  });
+
+  // Footer
+  const pages = doc.getNumberOfPages();
+  for (let p = 1; p <= pages; p++) {
+    doc.setPage(p);
+    doc.setFontSize(8);
+    doc.setTextColor(150,150,150);
+    doc.text('AQA GCSE Biology Revision · chrischambers44.github.io/Biology', lm, 292);
+    doc.text(`Page ${p} of ${pages}`, rm, 292, { align: 'right' });
+  }
+
+  doc.save(`Biology-Quiz-${new Date().toISOString().slice(0,10)}.pdf`);
+  showToast('PDF downloaded! 📄');
+}
+
+// ══════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
+(function init() {
+  // Load streak
+  const streak = JSON.parse(localStorage.getItem('bio_streak') || '{"count":0}');
+  document.getElementById('streak-badge').textContent = `🔥 ${streak.count} streak`;
+})();
+</script>
+</body>
+</html>
