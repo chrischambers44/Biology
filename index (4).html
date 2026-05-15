@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AQA GCSE Biology — Revision Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1c2430;
+    --border: #30363d;
+    --accent: #3fb950;
+    --accent2: #58a6ff;
+    --accent3: #f78166;
+    --accent4: #d2a8ff;
+    --text: #e6edf3;
+    --text-muted: #7d8590;
+    --text-dim: #484f58;
+    --t1: #3fb950; --t2: #58a6ff; --t3: #f78166;
+    --t4: #ffa657; --t5: #d2a8ff; --t6: #79c0ff; --t7: #56d364;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* NAV */
+  nav {
+    border-bottom: 1px solid var(--border);
+    padding: 0 40px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    height: 56px;
+    position: sticky;
+    top: 0;
+    background: rgba(13,17,23,0.95);
+    backdrop-filter: blur(8px);
+    z-index: 100;
+  }
+  .nav-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .nav-logo span { color: var(--accent); }
+  .nav-links {
+    display: flex;
+    gap: 4px;
+    margin-left: auto;
+  }
+  .nav-link {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: all 0.15s;
+  }
+  .nav-link:hover { color: var(--text); background: var(--surface2); }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(160deg, #0d1117 0%, #0a1f0d 60%, #0d1117 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 80px 40px 70px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -100px; left: -100px;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(63,185,80,0.07) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -80px; right: 10%;
+    width: 350px; height: 350px;
+    background: radial-gradient(circle, rgba(88,166,255,0.05) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-inner { max-width: 900px; margin: 0 auto; position: relative; }
+  .hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(63,185,80,0.1);
+    border: 1px solid rgba(63,185,80,0.3);
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 24px;
+  }
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(36px, 6vw, 64px);
+    font-weight: 900;
+    line-height: 1.05;
+    margin-bottom: 20px;
+  }
+  h1 .green { color: var(--accent); }
+  .hero-sub {
+    font-size: 17px;
+    color: var(--text-muted);
+    max-width: 580px;
+    margin-bottom: 40px;
+    line-height: 1.65;
+  }
+  .hero-chips {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 14px;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .chip-dot { width: 7px; height: 7px; border-radius: 50%; }
+
+  /* MAIN */
+  .main { max-width: 900px; margin: 0 auto; padding: 60px 20px 100px; }
+
+  /* SECTION HEADER */
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .section-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+    font-weight: 700;
+  }
+  .section-header .sh-sub {
+    font-size: 13px;
+    color: var(--text-dim);
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* QUIZ FEATURED CARD */
+  .quiz-card {
+    background: linear-gradient(135deg, #0f2010, #111a22);
+    border: 1px solid rgba(63,185,80,0.35);
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 20px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 24px;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .quiz-card:hover { border-color: rgba(63,185,80,0.6); transform: translateY(-2px); }
+  .quiz-card::before {
+    content: '🧬';
+    position: absolute;
+    right: 140px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 80px;
+    opacity: 0.07;
+    pointer-events: none;
+  }
+
+  /* INFINITE QUIZ CARD — distinct style */
+  .infinite-card {
+    background: linear-gradient(135deg, #0d1f14, #151d10);
+    border: 1px solid rgba(63,185,80,0.25);
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 50px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 24px;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .infinite-card:hover { border-color: rgba(63,185,80,0.55); transform: translateY(-2px); }
+  .infinite-card::before {
+    content: '∞';
+    position: absolute;
+    right: 140px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 100px;
+    line-height: 1;
+    opacity: 0.06;
+    pointer-events: none;
+    font-family: 'Playfair Display', serif;
+    color: var(--accent);
+  }
+  .infinite-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(63,185,80,0.12);
+    border: 1px solid rgba(63,185,80,0.25);
+    border-radius: 6px;
+    padding: 3px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+
+  .quiz-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(63,185,80,0.15);
+    border: 1px solid rgba(63,185,80,0.3);
+    border-radius: 6px;
+    padding: 3px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+  .quiz-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .quiz-desc {
+    color: var(--text-muted);
+    font-size: 14px;
+    margin-bottom: 16px;
+    max-width: 480px;
+  }
+  .quiz-meta {
+    display: flex;
+    gap: 16px;
+    font-size: 13px;
+    color: var(--text-dim);
+    font-family: 'DM Mono', monospace;
+    flex-wrap: wrap;
+  }
+  .quiz-meta span { display: flex; align-items: center; gap: 5px; }
+  .quiz-btn {
+    background: linear-gradient(135deg, var(--accent), #2ea043);
+    color: #000;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    padding: 14px 28px;
+    border-radius: 10px;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.2s;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .quiz-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(63,185,80,0.35); }
+  .quiz-btn-outline {
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid rgba(63,185,80,0.4);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    padding: 14px 28px;
+    border-radius: 10px;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.2s;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .quiz-btn-outline:hover { background: rgba(63,185,80,0.08); border-color: rgba(63,185,80,0.7); transform: translateY(-2px); }
+
+  /* QUIZ PAIR layout */
+  .quiz-pair { margin-bottom: 50px; }
+  .quiz-pair-divider {
+    display: flex; align-items: center; gap: 12px; margin: 16px 0;
+  }
+  .quiz-pair-divider::before, .quiz-pair-divider::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
+  .quiz-pair-divider span {
+    font-size: 11px; font-family: 'DM Mono', monospace;
+    color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.08em;
+  }
+
+  /* TOPIC GRID */
+  .topic-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    margin-bottom: 60px;
+  }
+  .topic-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px;
+    text-decoration: none;
+    display: block;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .topic-card:hover { transform: translateY(-3px); border-color: var(--tc, var(--border)); }
+  .topic-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--tc, var(--accent));
+    border-radius: 12px 12px 0 0;
+  }
+  .tc-eyebrow {
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .tc-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+  .tc-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin-bottom: 14px;
+  }
+  .tc-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .tc-status {
+    font-size: 12px;
+    font-family: 'DM Mono', monospace;
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+  .status-soon { background: rgba(125,133,144,0.12); color: var(--text-dim); }
+  .status-ready { background: rgba(63,185,80,0.12); color: var(--accent); }
+  .status-wip { background: rgba(255,166,87,0.12); color: #ffa657; }
+  .tc-arrow { color: var(--text-dim); font-size: 16px; transition: transform 0.2s; }
+  .topic-card:hover .tc-arrow { transform: translateX(4px); color: var(--tc, var(--accent)); }
+
+  /* COMING SOON SECTION */
+  .coming-section { margin-bottom: 60px; }
+  .coming-banner {
+    background: rgba(88,166,255,0.05);
+    border: 1px solid rgba(88,166,255,0.15);
+    border-radius: 12px;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 14px;
+    color: var(--text-muted);
+  }
+  .coming-banner strong { color: var(--accent2); }
+
+  /* SETUP GUIDE */
+  .setup-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 60px;
+  }
+  .setup-section h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    margin-bottom: 20px;
+  }
+  .setup-steps { display: flex; flex-direction: column; gap: 14px; }
+  .setup-step {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+  .step-num {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700;
+    font-family: 'DM Mono', monospace;
+    color: var(--accent);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .step-body { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
+  .step-body strong { color: var(--text); }
+  .step-body code {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--accent2);
+  }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 24px 40px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+  footer span { margin-left: auto; }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  @media (max-width: 640px) {
+    nav { padding: 0 16px; }
+    .hero { padding: 50px 20px 44px; }
+    .quiz-card, .infinite-card { grid-template-columns: 1fr; }
+    .quiz-card::before, .infinite-card::before { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html">🧬 <span>Biology</span> Revision</a>
+  <div class="nav-links">
+    <a class="nav-link" href="#topics">Topics</a>
+    <a class="nav-link" href="#setup">Setup</a>
+    <a class="nav-link" href="quiz.html">Diagnostic</a>
+    <a class="nav-link" href="infinite-quiz.html" style="color:var(--accent);font-weight:600">∞ Biology</a>
+    <a class="nav-link" href="infinite-quiz-chemistry.html" style="color:#38bdf8;font-weight:600">⚗️ Chemistry</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">🧬 AQA GCSE Combined Science: Trilogy</div>
+    <h1>Biology<br><span class="green">Revision Hub</span></h1>
+    <p class="hero-sub">Everything you need to revise all 7 biology topics before your GCSEs. Start with the diagnostic quiz to find out exactly where to focus.</p>
+    <div class="hero-chips">
+      <div class="chip"><div class="chip-dot" style="background:var(--t1)"></div>B1 Cell Biology</div>
+      <div class="chip"><div class="chip-dot" style="background:var(--t2)"></div>B2 Organisation</div>
+      <div class="chip"><div class="chip-dot" style="background:var(--t3)"></div>B3 Infection</div>
+      <div class="chip"><div class="chip-dot" style="background:var(--t4)"></div>B4 Bioenergetics</div>
+      <div class="chip"><div class="chip-dot" style="background:var(--t5)"></div>B5 Homeostasis</div>
+      <div class="chip"><div class="chip-dot" style="background:var(--t6)"></div>B6 Inheritance</div>
+      <div class="chip"><div class="chip-dot" style="background:var(--t7)"></div>B7 Ecology</div>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- QUIZ SECTION -->
+  <div class="section-header">
+    <h2>Start Here</h2>
+    <span class="sh-sub">Step 1 — know your gaps</span>
+  </div>
+
+  <div class="quiz-pair">
+    <!-- Diagnostic Quiz -->
+    <div class="quiz-card">
+      <div>
+        <div class="quiz-tag">⚡ AI Marked</div>
+        <div class="quiz-title">Full Biology Diagnostic Quiz</div>
+        <div class="quiz-desc">42 questions across all 7 topics — multiple choice, short answer, and extended 6-mark responses. Claude marks every answer and tells you exactly what to revise.</div>
+        <div class="quiz-meta">
+          <span>📝 42 questions</span>
+          <span>🕐 ~90 minutes</span>
+          <span>🤖 Instant AI feedback</span>
+        </div>
+      </div>
+      <a class="quiz-btn" href="quiz.html">Take the Quiz →</a>
+    </div>
+
+    <div class="quiz-pair-divider"><span>or try the new</span></div>
+
+    <!-- Infinite Quiz -->
+    <div class="infinite-card">
+      <div>
+        <div class="infinite-tag">∞ Infinite · 🔄 Fresh Every Time</div>
+        <div class="quiz-title">Infinite Quiz Generator</div>
+        <div class="quiz-desc">Claude generates a brand-new set of questions every time — pick your topics, choose how many, and practise as much as you want. Includes vs Dad competitive mode!</div>
+        <div class="quiz-meta">
+          <span>🎯 You choose the length</span>
+          <span>📚 All 7 topics</span>
+          <span>⚔️ vs Dad mode</span>
+          <span>📄 PDF results</span>
+        </div>
+      </div>
+      <a class="quiz-btn-outline" href="infinite-quiz.html">Generate Biology Quiz →</a>
+    </div>
+
+    <div class="quiz-pair-divider"><span>also available</span></div>
+
+    <!-- Chemistry Infinite Quiz -->
+    <div class="infinite-card" style="background:linear-gradient(135deg,#0a0f1e,#0d1520);border-color:rgba(56,189,248,0.25);">
+      <div>
+        <div class="infinite-tag" style="background:rgba(56,189,248,0.12);border-color:rgba(56,189,248,0.25);color:#38bdf8">∞ Infinite · ⚗️ Chemistry</div>
+        <div class="quiz-title">Chemistry Infinite Quiz Generator</div>
+        <div class="quiz-desc">All 10 Chemistry topics — C1 through C10. Includes calculation questions for quantitative chemistry, with step-by-step model answers. Same vs Dad mode and PDF download.</div>
+        <div class="quiz-meta">
+          <span>⚗️ C1–C10 topics</span>
+          <span>🧮 Calculation questions</span>
+          <span>⚔️ vs Dad mode</span>
+          <span>📄 PDF results</span>
+        </div>
+      </div>
+      <a class="quiz-btn-outline" href="infinite-quiz-chemistry.html" style="color:#38bdf8;border-color:rgba(56,189,248,0.4)">Generate Chemistry Quiz →</a>
+    </div>
+  </div>
+
+  <!-- TOPIC MODULES -->
+  <div id="topics">
+    <div class="section-header">
+      <h2>Revision Modules</h2>
+      <span class="sh-sub">Topic by topic</span>
+    </div>
+
+    <div class="topic-grid">
+
+      <a class="topic-card" href="b1-cell-biology.html" style="--tc:var(--t1)">
+        <div class="tc-eyebrow">Topic 1 · Paper 1</div>
+        <div class="tc-title">Cell Biology</div>
+        <div class="tc-desc">Cell structure, microscopy, mitosis, stem cells, diffusion, osmosis, active transport.</div>
+        <div class="tc-footer">
+          <span class="tc-status status-soon">Coming soon</span>
+          <span class="tc-arrow">→</span>
+        </div>
+      </a>
+
+      <a class="topic-card" href="b2-organisation.html" style="--tc:var(--t2)">
+        <div class="tc-eyebrow">Topic 2 · Paper 1</div>
+        <div class="tc-title">Organisation</div>
+        <div class="tc-desc">Digestive system, enzymes, heart, blood vessels, health & disease, plant transport.</div>
+        <div class="tc-footer">
+          <span class="tc-status status-soon">Coming soon</span>
+          <span class="tc-arrow">→</span>
+        </div>
+      </a>
+
+      <a class="topic-card" href="b3-infection.html" style="--tc:var(--t3)">
+        <div class="tc-eyebrow">Topic 3 · Paper 1</div>
+        <div class="tc-title">Infection & Response</div>
+        <div class="tc-desc">Pathogens, immune system, vaccination, antibiotics, drug development.</div>
+        <div class="tc-footer">
+          <span class="tc-status status-soon">Coming soon</span>
+          <span class="tc-arrow">→</span>
+        </div>
+      </a>
+
+      <a class="topic-card" href="b4-bioenergetics.html" style="--tc:var(--t4)">
+        <div class="tc-eyebrow">Topic 4 · Paper 1</div>
+        <div class="tc-title">Bioenergetics</div>
+        <div class="tc-desc">Photosynthesis, limiting factors, aerobic & anaerobic respiration, metabolism.</div>
+        <div class="tc-footer">
+          <span class="tc-status status-soon">Coming soon</span>
+          <span class="tc-arrow">→</span>
+        </div>
+      </a>
+
+      <a class="topic-card" href="b5-homeostasis.html" style="--tc:var(--t5)">
+        <div class="tc-eyebrow">Topic 5 · Paper 2</div>
+        <div class="tc-title">Homeostasis & Response</div>
+        <div class="tc-desc">Nervous system, reflex arcs, hormones, blood glucose, kidneys, reproductive hormones.</div>
+        <div class="tc-footer">
+          <span class="tc-status status-soon">Coming soon</span>
+          <span class="tc-arrow">→</span>
+        </div>
+      </a>
+
+      <a class="topic-card" href="b6-inheritance.html" style="--tc:var(--t6)">
+        <div class="tc-eyebrow">Topic 6 · Paper 2</div>
+        <div class="tc-title">Inheritance, Variation & Evolution</div>
+        <div class="tc-desc">DNA, meiosis, inheritance, genetic disorders, natural selection, speciation.</div>
+        <div class="tc-footer">
+          <span class="tc-status status-soon">Coming soon</span>
+          <span class="tc-arrow">→</span>
+        </div>
+      </a>
+
+      <a class="topic-card" href="b7-ecology.html" style="--tc:var(--t7)">
+        <div class="tc-eyebrow">Topic 7 · Paper 2</div>
+        <div class="tc-title">Ecology</div>
+        <div class="tc-desc">Food webs, carbon & water cycles, biodiversity, human impact, ecosystems.</div>
+        <div class="tc-footer">
+          <span class="tc-status status-soon">Coming soon</span>
+          <span class="tc-arrow">→</span>
+        </div>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- COMING SOON BANNER -->
+  <div class="coming-section">
+    <div class="coming-banner">
+      <span style="font-size:22px">🚀</span>
+      <div><strong>Modules coming soon!</strong> Each topic will have a full lesson with key concepts, worked examples, required practicals, and an AI-powered mini quiz. Check back regularly as new modules are added.</div>
+    </div>
+  </div>
+
+  <!-- SETUP GUIDE -->
+  <div id="setup" class="setup-section">
+    <h2>⚙️ Setup Guide — How this site works</h2>
+    <div class="setup-steps">
+      <div class="setup-step">
+        <div class="step-num">1</div>
+        <div class="step-body"><strong>GitHub Pages:</strong> This site is hosted directly from the <code>Biology</code> GitHub repository. Go to <strong>Settings → Pages → Source: Deploy from branch → main → / (root)</strong> and save. Your site will be live at <code>https://yourusername.github.io/Biology/</code></div>
+      </div>
+      <div class="setup-step">
+        <div class="step-num">2</div>
+        <div class="step-body"><strong>Cloudflare Worker (for AI marking):</strong> The quiz uses Claude AI to mark answers. Because of browser security rules (CORS), it needs a small proxy. Create a free account at <a href="https://workers.cloudflare.com" style="color:var(--accent2)">workers.cloudflare.com</a>, create a new Worker, and paste in the code from <code>worker.js</code> in this repo.</div>
+      </div>
+      <div class="setup-step">
+        <div class="step-num">3</div>
+        <div class="step-body"><strong>Update the proxy URL:</strong> Once your Worker is deployed, you'll get a URL like <code>https://biology-proxy.yourusername.workers.dev</code>. Open <code>quiz.html</code> and update the <code>PROXY_URL</code> constant near the top of the script section.</div>
+      </div>
+      <div class="setup-step">
+        <div class="step-num">4</div>
+        <div class="step-body"><strong>API Key:</strong> You'll need an Anthropic API key from <a href="https://console.anthropic.com" style="color:var(--accent2)">console.anthropic.com</a>. It costs only a few pence per quiz attempt. The key is entered on the quiz page and never stored on any server — it goes directly from the browser to your Cloudflare Worker, which forwards it to Anthropic.</div>
+      </div>
+      <div class="setup-step">
+        <div class="step-num">5</div>
+        <div class="step-body"><strong>(Optional) Lock down the Worker:</strong> In <code>worker.js</code>, update the <code>ALLOWED_ORIGIN</code> constant from <code>'*'</code> to your actual GitHub Pages URL to prevent anyone else using your proxy.</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end .main -->
+
+<footer>
+  🧬 AQA GCSE Biology Revision Hub
+  <span>Built for exam prep · AI-powered marking</span>
+</footer>
+
+</body>
+</html>
